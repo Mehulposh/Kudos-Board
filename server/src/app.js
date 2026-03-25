@@ -2,6 +2,9 @@ import express from 'express'
 import dotenv from 'dotenv'
 import cors from 'cors'
 import mongoose from 'mongoose'
+import hpp from 'hpp'
+import helmet from 'helmet'
+import rateLimit from 'express-rate-limit'
 
 //env configuration
 dotenv.config()
@@ -19,11 +22,48 @@ const MONGODB_URI = process.env.MONGODB_URI
 const CLIENT_URL = process.env.CLIENT_URL 
 
 //middleware
+app.use(hpp())
+app.use(helmet());
 app.use(cors({
   origin: process.env.CLIENT_URL || 'http://localhost:5173',
   credentials: true,
 }));
 
+// Rate limiting
+const globalLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 200,
+  message: { error: 'Too many requests, please try again later.' },
+});
+ 
+const postLimiter = rateLimit({
+  windowMs: 10 * 60 * 1000, // 10 minutes
+  max: 10,
+  message: { error: 'Too many kudos posted. Please wait a bit!' },
+});
+
+app.use(globalLimiter);
+app.use(express.json({ limit: '10kb' }));
+
+
+// Request logger
+app.use((req, _res, next) => {
+  console.log(`[${new Date().toISOString()}] ${req.method} ${req.path}`);
+  next();
+});
+
+
+// 404 handler
+app.use((req, res) => {
+  res.status(404).json({ success: false, message: `Route ${req.method} ${req.path} not found` });
+});
+
+
+// Error handler
+app.use((err, req, res, _next) => {
+  console.error("[ERROR]", err.stack);
+  res.status(500).json({ success: false, message: "Internal server error" });
+});
 
 //health check
 app.get('/api/health' , (req,res)=> {

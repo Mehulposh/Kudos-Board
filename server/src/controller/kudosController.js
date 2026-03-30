@@ -139,6 +139,29 @@ const patchKudos = async(req,res)=>{
 }
 
 
+// PATCH /api/kudos/:username/:kudoId/hide - Toggle hide (owner only)
+const hideKudos = async (req, res) => {
+  try {
+    if (req.user.username !== req.params.username) {
+      return res.status(403).json({ error: 'Forbidden.' });
+    }
+ 
+    const user = await User.findOne({ username: req.params.username.toLowerCase() });
+    if (!user) return res.status(404).json({ error: 'User not found.' });
+ 
+    const kudo = await Kudos.findOne({ _id: req.params.kudoId, recipient: user._id });
+    if (!kudo) return res.status(404).json({ error: 'Kudos not found.' });
+ 
+    kudo.isHidden = !kudo.isHidden;
+    if (kudo.isHidden) kudo.isPinned = false; // unpin hidden
+    await kudo.save();
+ 
+    res.json({ message: kudo.isHidden ? 'Kudos hidden.' : 'Kudos visible again.', kudo });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to toggle visibility.' });
+  }
+};
+
 // DELETE /api/kudos/:username/:kudoId - Delete (owner only)
 const deleteKudos = async(req,res)=> {
     try {
@@ -167,5 +190,6 @@ export {
     getKudos,
     postKudos,
     patchKudos,
-    deleteKudos
+    deleteKudos,
+    hideKudos
 }

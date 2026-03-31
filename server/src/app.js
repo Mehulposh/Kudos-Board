@@ -5,6 +5,11 @@ import mongoose from 'mongoose'
 import hpp from 'hpp'
 import helmet from 'helmet'
 import rateLimit from 'express-rate-limit'
+import mongoSanitize from 'express-mongo-sanitize';
+
+import authRoutes from './routes/authRoutes.js'
+import userRoutes from './routes/userRoutes.js'
+import kudosRoutes from './routes/kudosRoutes.js'
 
 //env configuration
 dotenv.config()
@@ -28,6 +33,8 @@ app.use(cors({
   origin: process.env.CLIENT_URL || 'http://localhost:5173',
   credentials: true,
 }));
+app.use(mongoSanitize()); // Place after helmet/cors
+
 
 // Rate limiting
 const globalLimiter = rateLimit({
@@ -52,6 +59,10 @@ app.use((req, _res, next) => {
   next();
 });
 
+app.use('/api/auth', authRoutes)
+app.use('/api/users', userRoutes)
+app.use('/api/kudos', postLimiter ,kudosRoutes)
+
 
 // 404 handler
 app.use((req, res) => {
@@ -66,13 +77,15 @@ app.use((err, req, res, _next) => {
 });
 
 //health check
-app.get('/api/health' , (req,res)=> {
-    res.json({
-        status: 'OK',
-        message: 'Server connection healthy',
-        timestamp: new Date().toISOString()
-    })
-})
+app.get('/api/health', async (req, res) => {
+  const dbStatus = mongoose.connection.readyState === 1 ? 'connected' : 'disconnected';
+  res.json({
+    status: dbStatus === 'connected' ? 'OK' : 'DEGRADED',
+    message: 'Server connection healthy',
+    database: dbStatus,
+    timestamp: new Date().toISOString()
+  });
+});
 
 // ── MongoDB connection + server start ─────────────────────────────────────────
 async function start() {
@@ -96,7 +109,7 @@ async function start() {
   }
 }
 
-//MONGOOSE CONNECTION
+
 mongoose.connection.on("disconnected", () => console.warn(`${new Date().toISOString()} ⚠️  MongoDB disconnected`));
 mongoose.connection.on("reconnected",  () => console.log(`${new Date().toISOString()} 🔄  MongoDB reconnected`));
 

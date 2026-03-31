@@ -54,8 +54,8 @@ const KudosSchema = new mongoose.Schema({
 
 
 // Index for efficient querying
-kudosSchema.index({ recipient: 1, isPinned: -1, createdAt: -1 });
-kudosSchema.index({ recipient: 1, isHidden: 1 });
+KudosSchema.index({ recipient: 1, isPinned: -1, createdAt: -1 });
+KudosSchema.index({ recipient: 1, isHidden: 1 });
  
 
 export default mongoose.model('kudos', KudosSchema)

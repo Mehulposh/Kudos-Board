@@ -61,12 +61,12 @@ UserSchema.pre('save', async function(next){
 })
 
 //Compare password at the time of login
-userSchema.methods.comparePassword = async function (candidatePassword) {
+UserSchema.methods.comparePassword = async function (candidatePassword) {
   return bcrypt.compare(candidatePassword, this.password);
 }
 
 // Remove sensitive fields from JSON output
-userSchema.methods.toJSON = function () {
+UserSchema.methods.toJSON = function () {
   const obj = this.toObject();
   delete obj.password;
   return obj;

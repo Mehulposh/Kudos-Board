@@ -33,7 +33,7 @@ app.use(cors({
   origin: process.env.CLIENT_URL || 'http://localhost:5173',
   credentials: true,
 }));
-app.use(mongoSanitize()); // Place after helmet/cors
+// app.use(mongoSanitize()); // Place after helmet/cors
 
 
 // Rate limiting
@@ -44,13 +44,19 @@ const globalLimiter = rateLimit({
 });
  
 const postLimiter = rateLimit({
-  windowMs: 10 * 60 * 1000, // 10 minutes
+  windowMs: 100 * 60 * 1000, // 10 minutes
   max: 10,
   message: { error: 'Too many kudos posted. Please wait a bit!' },
 });
 
 app.use(globalLimiter);
 app.use(express.json({ limit: '10kb' }));
+
+// ✅ SANITIZE - NOW RUNS ON PARSED BODY (not query)
+// app.use(mongoSanitize({
+//   replaceWith: '_',      // Replace $ and . with _ instead of deleting
+//   allowDots: false,      // Prevent dot notation attacks
+// }));
 
 
 // Request logger

@@ -24,7 +24,7 @@ export const KudoForm = ({ recipientName ,onSend}) => {
  
     const result = await onSend({
       message:  message.trim(),
-      nickname: nickname.trim() || 'Anonymous',
+      nick: nickname.trim() || 'Anonymous',
       emoji,
     });
  
@@ -51,7 +51,10 @@ export const KudoForm = ({ recipientName ,onSend}) => {
         Pick a vibe
       </p>
       <div className="mb-4">
-        <EmojiPicker />
+        <EmojiPicker 
+          selectedEmoji={emoji}
+          setSelectedEmoji={setEmoji}
+        />
       </div>
       
       <div className="mb-3">
@@ -76,7 +79,7 @@ export const KudoForm = ({ recipientName ,onSend}) => {
             maxLength={30}
           />
         </div>
-        <span className={`font-mono text-xs flex-shrink-0 ${charCount < 50 ? 'text-coral-500' : 'text-ink-200'}`}>
+        <span className={`font-mono text-xs shrink-0 ${charCount < 50 ? 'text-coral-500' : 'text-ink-200'}`}>
           {charCount}
         </span>
       </div>

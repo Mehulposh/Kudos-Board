@@ -17,6 +17,10 @@ export const Dashboard = () => {
   const { kudos, loadBoard, getStats, getFilteredKudos, moderateKudo } = useKudos();
   const { showToast } = useApp();
 
+  const [isPublic, setIsPublic] = useState(
+    user?.isPublic ?? true
+  );
+
   const navigate = useNavigate();
   
   const [profile, setProfile] = useState({
@@ -33,6 +37,12 @@ export const Dashboard = () => {
     if (user?.username) loadBoard(user.username);
   }, [user?.username, loadBoard]);
 
+
+  useEffect(() => {
+    if (user) {
+      setIsPublic(user.isPublic ?? true);
+    }
+  }, [user]);
 
    // Sync profile fields when user object changes (e.g. after save)
   useEffect(() => {
@@ -87,7 +97,34 @@ export const Dashboard = () => {
       showToast('✅', messages[action] || 'Done');
     }
   };
- 
+  
+
+  const handlePublicToggle = async () => {
+    const nextValue = !isPublic;
+
+    setIsPublic(nextValue);
+
+    const result = await updateProfile({
+      isPublic: nextValue,
+    });
+
+    if (!result.success) {
+      setIsPublic(!nextValue);
+
+      showToast(
+        '⚠️',
+        result.error || 'Failed to update privacy'
+      );
+      return;
+    }
+
+    showToast(
+      '🔒',
+      nextValue
+        ? 'Board is now public'
+        : 'Board is now private'
+    );
+  };
   const filteredKudos = getFilteredKudos(dashFilter, true /* isOwner */);
 
 
@@ -228,7 +265,7 @@ export const Dashboard = () => {
                     <p className="text-sm font-medium text-ink-900 mb-0.5">Public board</p>
                     <p className="text-[11px] text-ink-400">Anyone can send kudos</p>
                   </div>
-                  <Toggle enabled={user.isPublic ?? true} onChange={() => {}} />
+                  <Toggle enabled= {isPublic} onChange={handlePublicToggle} />
                 </div>
                 <div className="border-t border-cream-200 pt-3.5 flex items-center justify-between">
                   <div>

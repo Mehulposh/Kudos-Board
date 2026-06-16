@@ -267,13 +267,7 @@ export const Dashboard = () => {
                   </div>
                   <Toggle enabled= {isPublic} onChange={handlePublicToggle} />
                 </div>
-                <div className="border-t border-cream-200 pt-3.5 flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-ink-900 mb-0.5">Auto-approve</p>
-                    <p className="text-[11px] text-ink-400">Show messages instantly</p>
-                  </div>
-                  <Toggle enabled={true} onChange={() => {}} />
-                </div>
+                
               </div>
             </Card>
             

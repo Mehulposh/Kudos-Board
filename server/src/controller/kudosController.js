@@ -101,7 +101,7 @@ const postKudos = async(req,res)=> {
             message: 'Kudos sent! 🎉',
             kudo: kudoResponse,
         });
-    } catch (error) {
+    } catch (err) {
         console.error('Post kudos error:', err);
         if (err.name === 'ValidationError') {
             const messages = Object.values(err.errors).map((e) => e.message);
@@ -127,11 +127,22 @@ const patchKudos = async(req,res)=>{
         const kudo = await Kudos.findOne({ _id: kudosId, recipient: user._id });
         if (!kudo) return res.status(404).json({ error: 'Kudos not found.' });
     
-        kudo.isHidden = !kudo.isHidden;
-        if (kudo.isHidden) kudo.isPinned = false; // unpin hidden
+        // Toggle pin
+        kudo.isPinned = !kudo.isPinned;
+
+        // Optional: unhide if pinning
+        if (kudo.isPinned) {
+        kudo.isHidden = false;
+        }
+
         await kudo.save();
-    
-        res.json({ message: kudo.isHidden ? 'Kudos hidden.' : 'Kudos visible again.', kudo });
+
+        res.json({
+            message: kudo.isPinned
+                ? 'Kudos pinned.'
+                : 'Kudos unpinned.',
+            kudo,
+        });
 
     } catch (error) {
         res.status(500).json({ error: 'Failed to toggle visibility.' });

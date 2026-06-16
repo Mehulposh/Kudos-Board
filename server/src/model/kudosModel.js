@@ -34,8 +34,8 @@ const KudosSchema = new mongoose.Schema({
         default: false
     },
     ipHash: {
-        type: Boolean,
-        default: false
+        type: String,
+        trim: true,
     },
     isApproved: {
         type: Boolean,

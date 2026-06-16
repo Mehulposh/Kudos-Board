@@ -39,18 +39,24 @@ export const Board = () => {
     }
   }, [paramUsername, user, navigate]);
   
-  const handleSendKudo = async (message, nickname, emoji) => {
-    const result = await sendKudo(username, { message, nick: nickname, emoji });
-    
-    if (result.success) {
-      return { success: true };
-    }
-    
-    if (result.isRateLimit) {
-      return { success: false, error: 'Please wait before sending another kudo 🐌' };
-    }
-    
-    return { success: false, error: result.error || 'Failed to send kudo' };
+  const handleSendKudo = async (kudodata) => {
+     const result = await sendKudo(username, kudodata);
+
+  if (result.success) {
+    return { success: true };
+  }
+
+  if (result.isRateLimit) {
+    return {
+      success: false,
+      error: 'Please wait before sending another kudo 🐌'
+    };
+  }
+
+  return {
+    success: false,
+    error: result.error || 'Failed to send kudo'
+  };
   };
   
   const handleModerate = async (kudoId, action) => {
@@ -107,10 +113,24 @@ export const Board = () => {
       <div className="max-w-3xl mx-auto px-5 pb-16">
         {/* Send Form - hide if owner viewing own board */}
         {!isOwner && (
-          <KudoForm 
-            recipientName={boardUser?.displayName?.split(' ')[0] || username}
-            onSend={handleSendKudo}
-          />
+          boardUser?.isPublic ? (
+            <KudoForm
+              recipientName={boardUser?.displayName?.split(' ')[0] || username}
+              onSend={handleSendKudo}
+            />
+          ) : (
+            <div className="bg-white border-2 border-cream-200 rounded-2xl p-8 text-center shadow-sm mb-8">
+              <div className="text-5xl mb-3">🔒</div>
+
+              <h2 className="font-display text-xl font-semibold text-ink-900 mb-2">
+                This board is private
+              </h2>
+
+              <p className="text-ink-400 max-w-md mx-auto">
+                The owner has disabled public kudos. New messages cannot be submitted at this time.
+              </p>
+            </div>
+          )
         )}
         
         {/* Owner Filter Tabs */}

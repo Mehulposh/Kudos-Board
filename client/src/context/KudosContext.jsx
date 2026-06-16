@@ -84,7 +84,7 @@ export function KudosProvider({ children }) {
           break;
         case 'delete':
           await kudosService.deleteKudo(username, kudoId);
-          setKudos(prev => prev.filter(k => k.id !== kudoId));
+          setKudos(prev => prev.filter(k => k._id !== kudoId));
           return { success: true };
         default:
           throw new Error('Unknown action');
@@ -93,7 +93,7 @@ export function KudosProvider({ children }) {
       // Update local state
       const updated = result.kudo || result;
       setKudos(prev => prev.map(k => 
-        k.id === kudoId ? { ...k, ...updated } : k
+        k._id === kudoId ? { ...k, ...updated } : k
       ));
       
       return { success: true, kudo: updated };
@@ -108,13 +108,13 @@ export function KudosProvider({ children }) {
     
     // Public viewers never see hidden kudos
     if (!isOwner) {
-      list = list.filter(k => !k.hide);
+      list = list.filter(k => !k.isHidden);
     }
     
     if (filter === 'pinned') {
-      list = list.filter(k => k.pin);
+      list = list.filter(k => k.isPinned);
     } else if (filter === 'hidden' && isOwner) {
-      list = list.filter(k => k.hide);
+      list = list.filter(k => k.isHidden);
     }
     
     return list;
@@ -123,16 +123,16 @@ export function KudosProvider({ children }) {
 
   // ── Stats helper (used by Dashboard) ────────────────────────────────────
   const getStats = useCallback(() => {
-    const visible  = kudos.filter(k => !k.hide && !k.isHidden);
+    const visible  = kudos.filter(k =>  !k.isHidden);
     const weekAgo  = new Date();
     weekAgo.setDate(weekAgo.getDate() - 7);
  
     return {
-      total:    visible.length,
-      pinned:   kudos.filter(k => (k.pin || k.isPinned) && !k.hide && !k.isHidden).length,
-      hidden:   kudos.filter(k => k.hide || k.isHidden).length,
-      thisWeek: visible.filter(k => new Date(k.date || k.createdAt) > weekAgo).length,
-    };
+      total: visible.length,
+      pinned: kudos.filter(k => k.isPinned && !k.isHidden ).length,
+      hidden: kudos.filter(k => k.isHidden ).length,
+      thisWeek: visible.filter(k => new Date(k.createdAt) > weekAgo).length,
+  };
   }, [kudos]);
 
   // Keep `stats` in sync for components that read it directly (e.g. Board hero)

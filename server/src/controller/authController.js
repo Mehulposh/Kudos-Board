@@ -56,7 +56,7 @@ const Register = async (req,res,next) => {
             user: user
         })
         
-    } catch (error) {
+    } catch (err) {
         if (err.code === 11000) {
             return res.status(409).json({ error: 'Username or email already exists.' });
             }

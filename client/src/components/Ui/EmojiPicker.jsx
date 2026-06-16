@@ -1,8 +1,9 @@
 // src/components/ui/EmojiPicker.jsx
-import { useApp } from '../../context/AppContext.jsx';
 import { EMOJIS } from '../../constants/index.js';
-export const EmojiPicker = () => {
-  const {  selectedEmoji, setSelectedEmoji } = useApp();
+export const EmojiPicker = ({
+  selectedEmoji,
+  setSelectedEmoji,
+}) => {
   
   return (
     <div className="grid grid-cols-10 gap-0.75">

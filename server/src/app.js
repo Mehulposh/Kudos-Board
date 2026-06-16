@@ -36,20 +36,20 @@ app.use(cors({
 // app.use(mongoSanitize()); // Place after helmet/cors
 
 
-// Rate limiting
-const globalLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 200,
-  message: { error: 'Too many requests, please try again later.' },
-});
+// // Rate limiting
+// const globalLimiter = rateLimit({
+//   windowMs: 15 * 60 * 1000, // 15 minutes
+//   max: 200,
+//   message: { error: 'Too many requests, please try again later.' },
+// });
  
-const postLimiter = rateLimit({
-  windowMs: 100 * 60 * 1000, // 10 minutes
-  max: 10,
-  message: { error: 'Too many kudos posted. Please wait a bit!' },
-});
+// const postLimiter = rateLimit({
+//   windowMs: 100 * 60 * 1000, // 10 minutes
+//   max: 10,
+//   message: { error: 'Too many kudos posted. Please wait a bit!' },
+// });
 
-app.use(globalLimiter);
+// app.use(globalLimiter);
 app.use(express.json({ limit: '10kb' }));
 
 // ✅ SANITIZE - NOW RUNS ON PARSED BODY (not query)
@@ -67,7 +67,19 @@ app.use((req, _res, next) => {
 
 app.use('/api/auth', authRoutes)
 app.use('/api/users', userRoutes)
-app.use('/api/kudos', postLimiter ,kudosRoutes)
+app.use('/api/kudos', kudosRoutes)
+
+
+//health check
+app.get('/api/health', async (req, res) => {
+  const dbStatus = mongoose.connection.readyState === 1 ? 'connected' : 'disconnected';
+  res.json({
+    status: dbStatus === 'connected' ? 'OK' : 'DEGRADED',
+    message: 'Server connection healthy',
+    database: dbStatus,
+    timestamp: new Date().toISOString()
+  });
+});
 
 
 // 404 handler
@@ -82,16 +94,6 @@ app.use((err, req, res, _next) => {
   res.status(500).json({ success: false, message: "Internal server error" });
 });
 
-//health check
-app.get('/api/health', async (req, res) => {
-  const dbStatus = mongoose.connection.readyState === 1 ? 'connected' : 'disconnected';
-  res.json({
-    status: dbStatus === 'connected' ? 'OK' : 'DEGRADED',
-    message: 'Server connection healthy',
-    database: dbStatus,
-    timestamp: new Date().toISOString()
-  });
-});
 
 // ── MongoDB connection + server start ─────────────────────────────────────────
 async function start() {
